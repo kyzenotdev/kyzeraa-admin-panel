@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register - Kyzeraa Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+    <div class="container">
+        <!-- FORM LOGIN -->
+        <div id="login-section">
+            <h2>Login Panel</h2>
+            <div id="login-error" class="error-msg"></div>
+            <div id="login-success" class="success-msg"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" required placeholder="nama@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <div class="turnstile-box">
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAEyMwUdYSJCcbmb0"></div>
+                </div>
+                <button type="submit">Masuk</button>
+            </form>
+            <div class="switch-auth">
+                Belum punya akun? <a id="show-register">Daftar sekarang</a>
+            </div>
+        </div>
+
+        <!-- FORM REGISTER -->
+        <div id="register-section" style="display: none;">
+            <h2>Daftar Akun Baru</h2>
+            <div id="register-error" class="error-msg"></div>
+            <div id="register-success" class="success-msg"></div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="reg-fullname" required placeholder="Kyzeraa">
+                </div>
+                <div class="form-group">
+                    <label>Username (Huruf kecil & angka)</label>
+                    <input type="text" id="reg-username" required placeholder="adminkyzeraa">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" required placeholder="nama@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" required placeholder="••••••••">
+                </div>
+                <div class="turnstile-box">
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAEyMwUdYSJCcbmb0"></div>
+                </div>
+                <button type="submit">Daftar</button>
+            </form>
+            <div class="switch-auth">
+                Sudah punya akun? <a id="show-login">Login di sini</a>
+            </div>
+        </div>
+
+        <!-- FORM OTP -->
+        <div id="otp-section" style="display: none;">
+            <h2>Verifikasi OTP Email</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Cek inbox/spam email kamu untuk memasukkan kode verifikasi.</p>
+            <div id="otp-error" class="error-msg"></div>
+            <div id="otp-success" class="success-msg"></div>
+            <form id="otp-form">
+                <div class="form-group">
+                    <label>Kode OTP / Token</label>
+                    <input type="text" id="otp-token" required placeholder="Masukkan 6 digit kode">
+                </div>
+                <button type="submit">Verifikasi & Lanjutkan</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { handleRegister, handleVerifyOtp, handleLogin } from './js/auth.js';
+        
+        let registeredEmail = '';
+
+        // Toggle Form
+        document.getElementById('show-register').addEventListener('click', () => {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+        });
+
+        document.getElementById('show-login').addEventListener('click', () => {
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+        });
+
+        // Handler Register
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('reg-fullname').value;
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+
+            const errBox = document.getElementById('register-error');
+            const succBox = document.getElementById('register-success');
+            errBox.style.display = 'none';
+            succBox.style.display = 'none';
+
+            try {
+                await handleRegister(fullName, username, email, password, turnstileToken);
+                registeredEmail = email;
+                succBox.textContent = 'Registrasi berhasil! Masukkan kode OTP yang dikirim ke email.';
+                succBox.style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('register-section').style.display = 'none';
+                    document.getElementById('otp-section').style.display = 'block';
+                }, 1500);
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.style.display = 'block';
+            }
+        });
+
+        // Handler OTP
+        document.getElementById('otp-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = document.getElementById('otp-token').value;
+            const errBox = document.getElementById('otp-error');
+            const succBox = document.getElementById('otp-success');
+
+            try {
+                await handleVerifyOtp(registeredEmail, token);
+                succBox.textContent = 'Verifikasi berhasil! Mengalihkan ke login...';
+                succBox.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '1_login.html';
+                }, 1500);
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.style.display = 'block';
+            }
+        });
+
+        // Handler Login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+
+            const errBox = document.getElementById('login-error');
+            const succBox = document.getElementById('login-success');
+            errBox.style.display = 'none';
+            succBox.style.display = 'none';
+
+            try {
+                await handleLogin(email, password, turnstileToken);
+                succBox.textContent = 'Login berhasil! Mengalihkan...';
+                succBox.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1200);
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

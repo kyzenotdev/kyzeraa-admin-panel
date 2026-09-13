@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Kyzeraa Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            margin: 0;
+            width: auto;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .panel-section {
+            display: none;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .panel-section.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-muted);
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-pending { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+        .badge-success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .action-btn {
+            padding: 6px 10px;
+            font-size: 12px;
+            margin: 2px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container" style="width: 100%;">
+        <div class="header-panel">
+            <h2>Kyzeraa Admin Panel</h2>
+            <button id="logout-btn" style="background: var(--danger); width: auto; padding: 8px 14px; margin: 0;">Logout</button>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-target="setoran-tab">Kelola Setoran</button>
+            <button class="tab-btn" data-target="withdraw-tab">Kelola Withdraw</button>
+            <button class="tab-btn" data-target="users-tab">Kelola Pengguna</button>
+            <button class="tab-btn" data-target="config-tab">Pengaturan Sistem</button>
+        </div>
+
+        <!-- TAB SETORAN -->
+        <div id="setoran-tab" class="panel-section active">
+            <h3>Daftar Setoran Gmail</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>User</th>
+                            <th>Detail / Akun</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="setoran-table-body">
+                        <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB WITHDRAW -->
+        <div id="withdraw-tab" class="panel-section">
+            <h3>Daftar Penarikan Saldo (WD)</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>User</th>
+                            <th>Jumlah</th>
+                            <th>Metode/Tujuan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdraw-table-body">
+                        <tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB USERS -->
+        <div id="users-tab" class="panel-section">
+            <h3>Manajemen Pengguna & Saldo</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Nama Lengkap</th>
+                            <th>Saldo</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB CONFIG -->
+        <div id="config-tab" class="panel-section">
+            <h3>Konfigurasi Sistem Utama</h3>
+            <div id="config-success" class="success-msg"></div>
+            <div id="config-error" class="error-msg"></div>
+            <form id="config-form" style="margin-top: 15px;">
+                <div class="form-group">
+                    <label>Harga / Rate Setoran</label>
+                    <input type="number" id="cfg-rate" required>
+                </div>
+                <div class="form-group">
+                    <label>Minimum Withdraw (WD)</label>
+                    <input type="number" id="cfg-min-wd" required>
+                </div>
+                <div class="form-group">
+                    <label>Status Sistem (Maintenance / Aktif)</label>
+                    <input type="text" id="cfg-status" required>
+                </div>
+                <button type="submit">Simpan Konfigurasi</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/config.js';
+        import { 
+            fetchSetoran, updateSetoranStatus, 
+            fetchWithdrawals, updateWithdrawalStatus, 
+            fetchProfiles, modifyUserBalance, 
+            updateUserStatus, fetchSystemConfig, updateSystemConfig 
+        } from './js/adminApp.js';
+        import { subscribeToRealtimeChanges } from './js/realtime.js';
+
+        let currentUser = null;
+
+        async function initAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = '1_login.html';
+                return;
+            }
+            currentUser = session.user;
+            loadAllData();
+            initRealtime();
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '1_login.html';
+        });
+
+        // Tab Switching Logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'));
+                e.target.classList.add('active');
+                document.getElementById(e.target.dataset.target).classList.add('active');
+            });
+        });
+
+        async function loadAllData() {
+            loadSetoranUI();
+            loadWithdrawUI();
+            loadUsersUI();
+            loadConfigUI();
+        }
+
+        async function loadSetoranUI() {
+            try {
+                const data = await fetchSetoran();
+                const tbody = document.getElementById('setoran-table-body');
+                tbody.innerHTML = data.length ? '' : '<tr><td colspan="5" style="text-align: center;">Belum ada data setoran.</td></tr>';
+                data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${new Date(item.created_at).toLocaleString()}</td>
+                            <td>${item.profiles?.username || 'Unknown'}</td>
+                            <td>${item.detail || '-'}</td>
+                            <td><span class="badge badge-${item.status === 'success' ? 'success' : item.status === 'danger' ? 'danger' : 'pending'}">${item.status}</span></td>
+                            <td>
+                                <button class="action-btn" style="background: var(--success);" onclick="window.handleSetoranAction('${item.id}', 'success')">Setujui</button>
+                                <button class="action-btn" style="background: var(--danger);" onclick="window.handleSetoranAction('${item.id}', 'rejected')">Tolak</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        window.handleSetoranAction = async (id, status) => {
+            try {
+                await updateSetoranStatus(id, status);
+                loadSetoranUI();
+            } catch (err) { alert(err.message); }
+        };
+
+        async function loadWithdrawUI() {
+            try {
+                const data = await fetchWithdrawals();
+                const tbody = document.getElementById('withdraw-table-body');
+                tbody.innerHTML = data.length ? '' : '<tr><td colspan="6" style="text-align: center;">Belum ada penarikan.</td></tr>';
+                data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${new Date(item.created_at).toLocaleString()}</td>
+                            <td>${item.profiles?.username || 'Unknown'}</td>
+                            <td>Rp ${item.amount}</td>
+                            <td>${item.destination || '-'}</td>
+                            <td><span class="badge badge-${item.status === 'success' ? 'success' : 'pending'}">${item.status}</span></td>
+                            <td>
+                                <button class="action-btn" style="background: var(--success);" onclick="window.handleWdAction('${item.id}', 'success')">Cairkan</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        window.handleWdAction = async (id, status) => {
+            try {
+                await updateWithdrawalStatus(id, status);
+                loadWithdrawUI();
+            } catch (err) { alert(err.message); }
+        };
+
+        async function loadUsersUI() {
+            try {
+                const data = await fetchProfiles();
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = data.length ? '' : '<tr><td colspan="5" style="text-align: center;">Belum ada user.</td></tr>';
+                data.forEach(user => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${user.username || '-'}</td>
+                            <td>${user.full_name || '-'}</td>
+                            <td>Rp ${user.balance || 0}</td>
+                            <td>${user.status || 'active'}</td>
+                            <td>
+                                <button class="action-btn" onclick="window.promptBalance('${user.id}')">Atur Saldo</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        window.promptBalance = async (userId) => {
+            const type = prompt("Ketik jenis mutasi ('add' untuk tambah, 'sub' untuk kurang):");
+            if (type !== 'add' && type !== 'sub') return;
+            const amount = prompt("Masukkan nominal jumlah saldo:");
+            if (!amount) return;
+            const reason = prompt("Alasan/keterangan mutasi:") || "Admin adjustment";
+            try {
+                await modifyUserBalance(userId, currentUser.id, type === 'add' ? 'add' : 'subtract', Number(amount), reason);
+                loadUsersUI();
+                alert("Saldo berhasil diperbarui!");
+            } catch (err) { alert(err.message); }
+        };
+
+        async function loadConfigUI() {
+            try {
+                const config = await fetchSystemConfig();
+                if (config) {
+                    document.getElementById('cfg-rate').value = config.rate || 0;
+                    document.getElementById('cfg-min-wd').value = config.min_withdraw || 0;
+                    document.getElementById('cfg-status').value = config.system_status || 'active';
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('config-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rate = document.getElementById('cfg-rate').value;
+            const min_withdraw = document.getElementById('cfg-min-wd').value;
+            const system_status = document.getElementById('cfg-status').value;
+            const succBox = document.getElementById('config-success');
+            const errBox = document.getElementById('config-error');
+
+            try {
+                await updateSystemConfig({ rate, min_withdraw, system_status });
+                succBox.textContent = 'Konfigurasi berhasil disimpan!';
+                succBox.style.display = 'block';
+                setTimeout(() => succBox.style.display = 'none', 3000);
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.style.display = 'block';
+            }
+        });
+
+        function initRealtime() {
+            subscribeToRealtimeChanges('setoran', () => loadSetoranUI());
+            subscribeToRealtimeChanges('withdrawals', () => loadWithdrawUI());
+            subscribeToRealtimeChanges('profiles', () => loadUsersUI());
+        }
+
+        initAuth();
+    </script>
+</body>
+</html>
