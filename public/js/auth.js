@@ -17,7 +17,8 @@ export async function handleRegister(fullName, username, email, password, turnst
       data: {
         full_name: fullName,
         username: username,
-        role: 'user'
+        role: 'user',
+        captcha_token: turnstileToken
       }
     }
   });
@@ -44,7 +45,12 @@ export async function handleLogin(email, password, turnstileToken) {
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password
+    password,
+    options: {
+      data: {
+        captcha_token: turnstileToken
+      }
+    }
   });
 
   if (error) throw error;
