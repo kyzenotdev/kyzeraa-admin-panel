@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Kredensial Supabase
 const SUPABASE_URL = 'https://bxvgaymtuxnjsbgulqxd.supabase.co'; // Ganti dengan Project URL asli kamu dari Supabase
-const SUPABASE_ANON_KEY = 'sb_publishable_GB_9r-6O8AdrjLlSguvUBg_vCmiRsYa';
+const SUPABASE_ANON_KEY = 'sb_publishable_JcurKrtiZ-4T-6gIFwWpbw_04KUL-aZ';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
